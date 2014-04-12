@@ -1,15 +1,17 @@
 import requests
-import json
 import math
+import json
+from random import randint
 
 
 class User:
     def __init__(self, username, password):
-        self.url = 'http://10.1.1.15/lietowin/public/api/v1/'
+        self.url = 'http://localhost/lietowin/public/api/v1/'
         self.request = requests.session()
         self.game_id = None
         self.username = username
         self.password = password
+        self.game_state = None
 
         self.queue_me()
 
@@ -17,7 +19,10 @@ class User:
         queue_request = self.request.get(self.url + 'queue', auth=(self.username, self.password))
         if queue_request.status_code == 200:
             queue_result = queue_request.json()
-            self.game_id = queue_result['game_id']
+            if queue_result.has_key("game_id"):
+                self.game_id = queue_result['game_id']
+            else:
+                print self.username + " is queued"
 
     def play(self):
         if self.game_id is None:
@@ -25,55 +30,117 @@ class User:
         else:
             game_state_request = self.request.get(self.url + 'game', auth=(self.username, self.password))
             if game_state_request.status_code == 200:
-                self.game(game_state_request.json())
+                self.game_state = game_state_request.json()
+                self.game()
 
-    def game(self, game_state):
-        a = 1
-        b = 2
-        c = 2
-        p_spoton = self.prob_spot_on(a, b, c)
-        p_lie = self.prob_lie(a, b, c)
-        p_raise = self.prob_raise(a, b, c)
-        print "P spot on = ", str(p_spoton*100), "%  P lie = ", str(p_lie*100), "%  P raise = ", str(p_raise*100), '%'
-        if self.username == str(game_state['playersTurn']):
+    def game(self):
+        # a = 1
+        # b = 2
+        # c = 2
+        # p_spoton = self.prob_spot_on(a, b, c)
+        # p_lie = self.prob_lie(a, b, c)
+        # p_raise = self.prob_raise(a, b, c)
+        # print "P spot on = ", str(p_spoton*100), "%  P lie = ", str(p_lie*100), "%  P raise = ", str(p_raise*100), '%'
+        if self.username == str(self.game_state['playersTurn']):
             last_bet_amt = None
             last_bet_dice = None
-            if len(game_state['moves']):
-                last_turn = max(game_state['moves'].keys(), key=int)
-                last_bet_amt = int(float(game_state['moves'][last_turn]['amount']))
-                last_bet_dice = int(float(game_state['moves'][last_turn]['diceFace']))
+            if len(self.game_state['moves']):
+                last_turn = max(self.game_state['moves'].keys(), key=int)
+                last_bet_amt = int(float(self.game_state['moves'][last_turn]['amount']))
+                last_bet_dice = int(float(self.game_state['moves'][last_turn]['diceFace']))
 
             if last_bet_amt is None:
-                self.make_move()
+                my_bet_dice_face = randint(1, 6)
+                self.make_move('raise', 1, my_bet_dice_face)
             else:
-                unknown_dice_count = self.count_unknown_dice(game_state['diceAvailable'])
-                print( self.count_dice_in_hand(last_bet_dice, game_state['myDice']), last_bet_dice, "___fanny")
-
-                    # if last_bet_dice < 6:
-                    #     payload = {'call': 'raise', 'amount': '3', 'dice_number': '3'}
-                    #     headers = {'content-type': 'application/json'}
-                    # move_request = self.request.post(self.url+'game/move', data=json.dumps(payload), headers=headers,
-                    #                                  auth=(self.username, self.password))
-
-                    # print(move_request)
-
+                highest_confidence = 0.0
+                highest_confidence_call = None
+                highest_confidence_dice = None
+                for die in range(1, 7):
+                    for index, confidence in enumerate(self.test_dice_confidence(die)):
+                        if highest_confidence < confidence:
+                            highest_confidence = confidence
+                            highest_confidence_dice = die
+                            # dear python, why no switch statements you piece of shit
+                            if index == 0:
+                                highest_confidence_call = 'raise'
+                            elif index == 1:
+                                highest_confidence_call = 'perfect'
+                            else:
+                                highest_confidence_call = 'lie'
+                raise_amount = self.get_next_raise_amount(highest_confidence_dice)
+                self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
         else:
-            print('not my turn')
+            print self.username, "cant move because its not their turn"
 
-    def count_unknown_dice(self, dice_available):
-        total_dice = 0
-        for user, count in dice_available.iteritems():
-            print user, count
-            if user != self.username:
-                total_dice += int(count)
-        return total_dice
+    # todo: add option params so standalone testing can be done without game_state
+    def test_dice_confidence(self, dice_face):
+        if self.validate_game_state():
+            raise_amount = self.get_next_raise_amount(dice_face)
+            occurrences_in_hand = self.count_occurrences_in_hand(dice_face)
+            unknown_dice_count = self.count_unknown_dice()
 
-    def count_dice_in_hand(self, dice_face, my_hand):
-        count_dice = 0
-        for dice in my_hand:
-            if int(dice) == dice_face:
-                count_dice += 1
-        return count_dice
+            raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
+            spot_on = self.prob_spot_on(raise_amount, unknown_dice_count, occurrences_in_hand)
+            lie = self.prob_lie(raise_amount, unknown_dice_count, occurrences_in_hand)
+            confidence = [raise_bet, spot_on, lie]
+            return confidence
+
+    def get_next_raise_amount(self, dice_face):
+        if self.validate_game_state():
+            last_bet_amt = None
+            last_bet_dice = None
+            if len(self.game_state['moves']):
+                last_turn = max(self.game_state['moves'].keys(), key=int)
+                last_bet_amt = int(float(self.game_state['moves'][last_turn]['amount']))
+                last_bet_dice = int(float(self.game_state['moves'][last_turn]['diceFace']))
+            if last_bet_dice is None:
+                # no one has bet yet
+                return 1
+            if dice_face <= last_bet_dice:
+                return last_bet_amt + 1
+            else:
+                return last_bet_amt
+
+    def count_occurrences_in_hand(self, dice_face):
+        counter = 0
+        if self.validate_game_state():
+            my_hand = self.game_state['myDice']
+            for die in my_hand:
+                if int(die) == dice_face:
+                    counter += 1
+        return counter
+
+    def make_move(self, call, dice_amount, dice_face):
+        payload = {'call': call, 'amount': dice_amount, 'dice_number': dice_face}
+        headers = {'content-type': 'application/json'}
+        move_request = self.request.post(self.url+'game/move', data=json.dumps(payload), headers=headers,
+                                         auth=(self.username, self.password))
+        print self.username, "has bet", call, dice_amount, "x", dice_face, "s"
+
+    def count_unknown_dice(self):
+        if self.validate_game_state():
+            dice_available = self.game_state['diceAvailable']
+            total_dice = 0
+            for user, count in dice_available.iteritems():
+                if user != self.username:
+                    total_dice += int(count)
+            return total_dice
+
+    def count_dice_in_hand(self, dice_face):
+        if self.validate_game_state():
+            my_hand = self.game_state['myDice']
+            count_dice = 0
+            for dice in my_hand:
+                if int(dice) == dice_face:
+                    count_dice += 1
+            return count_dice
+
+    def validate_game_state(self):
+        if self.game_state is None:
+            return False
+        else:
+            return True
 
     def binomial(self, p, k, n):
         coefficient = math.factorial(n)/(math.factorial(k)*math.factorial(n-k))
@@ -108,6 +175,5 @@ class User:
         probability = 1 - self.prob_lie(hypothesis, unknown_dice_count, count_in_hand) - self.prob_spot_on(hypothesis, unknown_dice_count, count_in_hand)
         return probability
 
-    def make_move(self):
-        print "make move poo"
+
 
