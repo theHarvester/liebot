@@ -20,4 +20,4 @@ class UserManager:
             for user in self.users:
                 user.play()
 
-                time.sleep(1)
+                time.sleep(2)

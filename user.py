@@ -30,8 +30,12 @@ class User:
         else:
             game_state_request = self.request.get(self.url + 'game', auth=(self.username, self.password))
             if game_state_request.status_code == 200:
-                self.game_state = game_state_request.json()
-                self.game()
+                game_state = game_state_request.json()
+                if game_state.has_key('winner_id'):
+                    self.queue_me()
+                else:
+                    self.game_state = game_state
+                    self.game()
 
     def game(self):
         # a = 1
