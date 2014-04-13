@@ -58,37 +58,37 @@ class User:
                 self.make_move('raise', 1, my_bet_dice_face)
             else:
                 highest_confidence = 0.0
-                highest_confidence_call = None
+                highest_confidence_call = 'raise'
                 highest_confidence_dice = None
+
+                unknown_dice_count = self.count_unknown_dice()
                 for die in range(1, 7):
-                    for index, confidence in enumerate(self.test_dice_confidence(die)):
-                        if highest_confidence < confidence:
-                            highest_confidence = confidence
-                            highest_confidence_dice = die
-                            # dear python, why no switch statements you piece of shit
-                            if index == 0:
-                                highest_confidence_call = 'raise'
-                            elif index == 1:
-                                highest_confidence_call = 'perfect'
-                            else:
-                                highest_confidence_call = 'lie'
-                raise_amount = self.get_next_raise_amount(highest_confidence_dice)
-                self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
+                    raise_amount = self.get_next_raise_amount(die)
+                    occurrences_in_hand = self.count_occurrences_in_hand(die)
+
+                    raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
+
+                    if highest_confidence < raise_bet:
+                        highest_confidence = raise_bet
+                        highest_confidence_dice = die
+
+                occurrences_in_hand = self.count_occurrences_in_hand(last_bet_dice)
+                spot_on = self.prob_spot_on(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                lie = self.prob_lie(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                if highest_confidence < spot_on:
+                    highest_confidence_dice = die
+                    highest_confidence_call = 'perfect'
+                if highest_confidence < lie:
+                    highest_confidence_dice = die
+                    highest_confidence_call = 'lie'
+
+                if highest_confidence_call == 'raise':
+                    raise_amount = self.get_next_raise_amount(highest_confidence_dice)
+                    self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
+                else:
+                    self.make_move(highest_confidence_call, 0, 0)
         else:
             print self.username, "cant move because its not their turn"
-
-    # todo: add option params so standalone testing can be done without game_state
-    def test_dice_confidence(self, dice_face):
-        if self.validate_game_state():
-            raise_amount = self.get_next_raise_amount(dice_face)
-            occurrences_in_hand = self.count_occurrences_in_hand(dice_face)
-            unknown_dice_count = self.count_unknown_dice()
-
-            raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
-            spot_on = self.prob_spot_on(raise_amount, unknown_dice_count, occurrences_in_hand)
-            lie = self.prob_lie(raise_amount, unknown_dice_count, occurrences_in_hand)
-            confidence = [raise_bet, spot_on, lie]
-            return confidence
 
     def get_next_raise_amount(self, dice_face):
         if self.validate_game_state():
