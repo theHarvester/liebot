@@ -13,7 +13,35 @@ class User:
         self.password = password
         self.game_state = None
 
+        # likeliness to call raise on main dice
+        self.honesty = 0
+
+        # likeliness to raise
+        self.risk = 0
+
+        self.lie_base = 0
+        self.lie_swing = 0
+
+        self.perfect_base = 0
+        self.perfect_swing = 0
+
+        self.raise_base = 0
+        self.raise_swing = 0
+
         self.queue_me()
+
+    def set_traits(self, honesty, risk, lie_base, lie_swing, perfect_base, perfect_swing, raise_base, raise_swing):
+        self.honesty = honesty
+        self.risk = risk
+
+        self.lie_base = lie_base
+        self.lie_swing = lie_swing
+
+        self.perfect_base = perfect_base
+        self.perfect_swing = perfect_swing
+
+        self.raise_base = raise_base
+        self.raise_swing = raise_swing
 
     def queue_me(self):
         queue_request = self.request.get(self.url + 'queue', auth=(self.username, self.password))

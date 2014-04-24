@@ -8,12 +8,14 @@ class UserManager:
         self.users = []
 
     def create_user(self):
-        new_user = User('bob', 'test')
+        new_user = User('james', 'test')
+        new_user.set_traits(100,0,-5,5,-5,5,5,5)
         self.users.append(new_user)
         new_user = User('jane', 'test')
+        new_user.set_traits(100,0,-5,5,-5,5,5,5)
         self.users.append(new_user)
-        new_user = User('james', 'test')
-        self.users.append(new_user)
+        # new_user = User('bob', 'test')
+        # self.users.append(new_user)
 
     def play_game(self):
         while True:
