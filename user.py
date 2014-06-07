@@ -104,12 +104,9 @@ class User:
                     raise_amount = self.get_next_raise_amount(die)
                     occurrences_in_hand = self.count_occurrences_in_hand(die)
                     if self.is_raise_possible(die, raise_amount):
-                        raise_amount_modifier = int((unknown_dice_count - raise_amount) / 3)
-                        if raise_amount_modifier < 0:
-                            raise_amount_modifier = 0
-                        print raise_amount_modifier
-                        raise_bet = self.prob_raise(raise_amount + raise_amount_modifier, unknown_dice_count, occurrences_in_hand)
-                        raise_bet = raise_bet + self.raise_base + random.uniform(0 - self.raise_swing, self.raise_swing)
+                        raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
+                        raise_bet += self.raise_base
+                        raise_bet += + random.uniform(0, self.raise_swing)
 
                         if highest_confidence < raise_bet:
                             highest_confidence = raise_bet
@@ -137,6 +134,14 @@ class User:
                 print ' lie', lie, 'spot on', spot_on, 'raise', highest_confidence
                 if highest_confidence_call == 'raise':
                     raise_amount = self.get_next_raise_amount(highest_confidence_dice)
+
+                    raise_amount_modifier = int((unknown_dice_count - raise_amount) / 4)
+                    print raise_amount_modifier
+                    if raise_amount_modifier < 0:
+                        raise_amount_modifier = 0
+
+                    if self.is_raise_possible(highest_confidence_dice, raise_amount + raise_amount_modifier):
+                        raise_amount += raise_amount_modifier
                     self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
                 else:
                     self.make_move(highest_confidence_call, 0, 0)
