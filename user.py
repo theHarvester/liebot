@@ -28,7 +28,8 @@ class User:
         self.raise_base = 0
         self.raise_swing = 0
 
-        self.playNow = False
+        self.play_now = False
+        self.is_new_user = True
 
     def set_traits(self, honesty, risk, lie_base, lie_swing, perfect_base, perfect_swing, raise_base, raise_swing):
         self.honesty = honesty
@@ -44,6 +45,7 @@ class User:
         self.raise_swing = raise_swing
 
     def queue_me(self):
+        self.is_new_user = False
         queue_request = self.request.get(self.url + 'queue', auth=(self.username, self.password))
         if queue_request.status_code == 200:
             queue_result = queue_request.json()
@@ -63,7 +65,7 @@ class User:
                     return False
                 else:
                     if game_state.has_key('myDice') and len(game_state['myDice']) >= 0:
-                        self.playNow = True
+                        self.play_now = True
                         self.game_state = game_state
                         return True
                     else:
@@ -72,7 +74,7 @@ class User:
         return False
 
     def play(self):
-        if self.playNow:
+        if self.play_now:
             self.game()
 
     def queue_and_play(self):
@@ -80,7 +82,8 @@ class User:
                 self.game()
 
     def game(self):
-        self.playNow = False
+        print 'blah'
+        self.play_now = False
         if self.username == str(self.game_state['playersTurn']):
             last_bet_amt = None
             last_bet_dice = None
@@ -114,9 +117,11 @@ class User:
 
                 occurrences_in_hand = self.count_occurrences_in_hand(last_bet_dice)
                 spot_on = self.prob_spot_on(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                # spot_on -= unknown_dice_count/5
                 spot_on = spot_on + self.perfect_base + randint(0 - self.perfect_swing, self.perfect_swing)
-                print last_bet_amt, unknown_dice_count, occurrences_in_hand
+
                 lie = self.prob_lie(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                # lie -= unknown_dice_count/5
                 lie = lie + self.lie_base + randint(0 - self.lie_swing, self.lie_swing)
 
                 if highest_confidence < spot_on:

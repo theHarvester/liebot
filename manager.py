@@ -29,7 +29,7 @@ class UserManager:
             for id, user in self.user_list.items():
                 if user.is_still_playing():
                     user.play()
-                else:
+                elif not user.is_new_user:
                     new_user = User(id, 'test')
                     new_user.set_traits(100,0,-5,5,-5,5,5,5)
                     self.user_list[id] = new_user
