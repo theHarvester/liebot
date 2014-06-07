@@ -28,6 +28,8 @@ class User:
         self.raise_base = 0
         self.raise_swing = 0
 
+        self.playNow = False
+
         self.queue_me()
 
     def set_traits(self, honesty, risk, lie_base, lie_swing, perfect_base, perfect_swing, raise_base, raise_swing):
@@ -52,7 +54,7 @@ class User:
             else:
                 print self.username + " is queued"
 
-    def play(self):
+    def is_still_playing(self):
         if self.game_id is None:
             self.queue_me()
         else:
@@ -60,19 +62,25 @@ class User:
             if game_state_request.status_code == 200:
                 game_state = game_state_request.json()
                 if game_state.has_key('winner_id'):
-                    self.queue_me()
+                    return False
                 else:
-                    self.game_state = game_state
-                    self.game()
+                    if len(game_state['myDice']) <= 0:
+                        return False
+                    else:
+                        self.playNow = True
+                        self.game_state = game_state
+                        return True
+        return False
+
+    def play(self):
+        if self.playNow:
+            self.game()
+        else:
+            if self.is_still_playing():
+                self.game()
 
     def game(self):
-        # a = 1
-        # b = 2
-        # c = 2
-        # p_spoton = self.prob_spot_on(a, b, c)
-        # p_lie = self.prob_lie(a, b, c)
-        # p_raise = self.prob_raise(a, b, c)
-        # print "P spot on = ", str(p_spoton*100), "%  P lie = ", str(p_lie*100), "%  P raise = ", str(p_raise*100), '%'
+        self.playNow = False
         if self.username == str(self.game_state['playersTurn']):
             last_bet_amt = None
             last_bet_dice = None
@@ -95,6 +103,7 @@ class User:
                     occurrences_in_hand = self.count_occurrences_in_hand(die)
 
                     raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
+                    raise_bet = raise_bet + self.raise_base + randint(0 - self.raise_swing, self.raise_swing)
 
                     if highest_confidence < raise_bet:
                         highest_confidence = raise_bet
@@ -102,7 +111,11 @@ class User:
 
                 occurrences_in_hand = self.count_occurrences_in_hand(last_bet_dice)
                 spot_on = self.prob_spot_on(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                spot_on = spot_on + self.perfect_base + randint(0 - self.perfect_swing, self.perfect_swing)
+
                 lie = self.prob_lie(last_bet_amt, unknown_dice_count, occurrences_in_hand)
+                lie = lie + self.lie_base + randint(0 - self.lie_swing, self.lie_swing)
+
                 if highest_confidence < spot_on:
                     highest_confidence_dice = die
                     highest_confidence_call = 'perfect'
@@ -186,8 +199,9 @@ class User:
         # if you have more dice than they have guessed, they have 0% probability of being spot on
         probability = 0
         # otherwise, use binomial probability equation
-        if k >= 0:
+        if k >= 0 and n >= k:
             probability = self.binomial(1.0/6, k, n)
+
         return probability
 
     def prob_lie(self, hypothesis, unknown_dice_count, in_hand_dice_count):
