@@ -30,8 +30,6 @@ class User:
 
         self.playNow = False
 
-        self.queue_me()
-
     def set_traits(self, honesty, risk, lie_base, lie_swing, perfect_base, perfect_swing, raise_base, raise_swing):
         self.honesty = honesty
         self.risk = risk
@@ -64,19 +62,21 @@ class User:
                 if game_state.has_key('winner_id'):
                     return False
                 else:
-                    if len(game_state['myDice']) <= 0:
-                        return False
-                    else:
+                    if game_state.has_key('myDice') and len(game_state['myDice']) >= 0:
                         self.playNow = True
                         self.game_state = game_state
                         return True
+                    else:
+                        return False
+
         return False
 
     def play(self):
         if self.playNow:
             self.game()
-        else:
-            if self.is_still_playing():
+
+    def queue_and_play(self):
+        if self.is_still_playing():
                 self.game()
 
     def game(self):
@@ -101,18 +101,21 @@ class User:
                 for die in range(1, 7):
                     raise_amount = self.get_next_raise_amount(die)
                     occurrences_in_hand = self.count_occurrences_in_hand(die)
+                    if self.is_raise_possible(die, raise_amount):
+                        raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
+                        raise_bet = raise_bet + self.raise_base + randint(0 - self.raise_swing, self.raise_swing)
 
-                    raise_bet = self.prob_raise(raise_amount, unknown_dice_count, occurrences_in_hand)
-                    raise_bet = raise_bet + self.raise_base + randint(0 - self.raise_swing, self.raise_swing)
+                        if highest_confidence < raise_bet:
+                            highest_confidence = raise_bet
+                            highest_confidence_dice = die
 
-                    if highest_confidence < raise_bet:
-                        highest_confidence = raise_bet
-                        highest_confidence_dice = die
+                if highest_confidence_dice is None and highest_confidence == 0.0:
+                    highest_confidence = -1000.00
 
                 occurrences_in_hand = self.count_occurrences_in_hand(last_bet_dice)
                 spot_on = self.prob_spot_on(last_bet_amt, unknown_dice_count, occurrences_in_hand)
                 spot_on = spot_on + self.perfect_base + randint(0 - self.perfect_swing, self.perfect_swing)
-
+                print last_bet_amt, unknown_dice_count, occurrences_in_hand
                 lie = self.prob_lie(last_bet_amt, unknown_dice_count, occurrences_in_hand)
                 lie = lie + self.lie_base + randint(0 - self.lie_swing, self.lie_swing)
 
@@ -123,6 +126,7 @@ class User:
                     highest_confidence_dice = die
                     highest_confidence_call = 'lie'
 
+                print 'raise', highest_confidence, ' spot on', spot_on, ' lie', lie
                 if highest_confidence_call == 'raise':
                     raise_amount = self.get_next_raise_amount(highest_confidence_dice)
                     self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
@@ -181,6 +185,17 @@ class User:
                     count_dice += 1
             return count_dice
 
+    def is_raise_possible(self, dice_face, amount):
+        total_dice = 0
+        for player_name, dice_count in self.game_state['diceAvailable'].iteritems():
+            total_dice += int(dice_count)
+        if amount < total_dice:
+            return True
+        elif amount == total_dice and dice_face < 6:
+            return True
+        else:
+            return False
+
     def validate_game_state(self):
         if self.game_state is None:
             return False
@@ -213,7 +228,8 @@ class User:
         # otherwise, use binomial probability equation
         if k > 0:
             for i in range(k):
-                probability += self.binomial(1.0/6, i, n)
+                if i <= n:
+                    probability += self.binomial(1.0/6, i, n)
         return probability
 
     def prob_raise(self, hypothesis, unknown_dice_count, count_in_hand):
