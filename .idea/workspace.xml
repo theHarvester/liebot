@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8aa078e9-3179-4ed7-b68b-2e79aabccfb0" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/manager.py" afterPath="$PROJECT_DIR$/manager.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/user.py" afterPath="$PROJECT_DIR$/user.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -37,21 +36,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="manager.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="manager.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/manager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.36263737" vertical-offset="0" max-vertical-offset="615">
-              <caret line="12" column="35" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="615">
+              <caret line="23" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="23" selection-end-column="12" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="user.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="user.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/user.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-6.4615383" vertical-offset="327" max-vertical-offset="3900">
-              <caret line="33" column="47" selection-start-line="33" selection-start-column="47" selection-end-line="33" selection-end-column="47" />
+            <state vertical-scroll-proportion="0.25240386" vertical-offset="0" max-vertical-offset="3900">
+              <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -73,8 +72,8 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/bot.py" />
-        <option value="$PROJECT_DIR$/user.py" />
         <option value="$PROJECT_DIR$/manager.py" />
+        <option value="$PROJECT_DIR$/user.py" />
       </list>
     </option>
   </component>
@@ -358,7 +357,11 @@
       <created>1402138449283</created>
       <updated>1402138449283</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Added ability to raise more than 1 if there is enough dice">
+      <created>1402183218431</created>
+      <updated>1402183218431</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -408,7 +411,8 @@
     <MESSAGE value="Stopped end of game crashing. Tweaked personalities. Added continues play" />
     <MESSAGE value="Tweaked queueing system" />
     <MESSAGE value="Tweaking personalities" />
-    <option name="LAST_COMMIT_MESSAGE" value="Tweaking personalities" />
+    <MESSAGE value="Added ability to raise more than 1 if there is enough dice" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added ability to raise more than 1 if there is enough dice" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -614,21 +618,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/user.py">
+    <entry file="file://$PROJECT_DIR$/manager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.4615383" vertical-offset="327" max-vertical-offset="3900">
-          <caret line="33" column="47" selection-start-line="33" selection-start-column="47" selection-end-line="33" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#15#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="615">
+          <caret line="23" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="23" selection-end-column="12" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/manager.py">
+    <entry file="file://$PROJECT_DIR$/user.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36263737" vertical-offset="0" max-vertical-offset="615">
-          <caret line="12" column="35" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
-          <folding />
+        <state vertical-scroll-proportion="0.25240386" vertical-offset="0" max-vertical-offset="3900">
+          <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#15#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

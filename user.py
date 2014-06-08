@@ -6,7 +6,7 @@ import random
 
 class User:
     def __init__(self, username, password):
-        self.url = 'http://localhost/lietowin/public/api/v1/'
+        self.url = 'http://www.lietowin.com/api/v1/'
         self.request = requests.session()
         self.game_id = None
         self.username = username
