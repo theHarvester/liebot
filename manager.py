@@ -34,4 +34,4 @@ class UserManager:
                     new_user = User(id, 'test')
                     new_user.set_traits(100,0,0,0,0,0,0,0)
                     self.user_list[id] = new_user
-                time.sleep(4)
+                time.sleep(10)
