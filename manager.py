@@ -9,7 +9,7 @@ class UserManager:
         self.user_list = {}
 
     def create_user(self):
-        new_user = User('james', 'test')
+        new_user = User('john', 'test')
         new_user.set_traits(100,0,-0.1,0,0,0,0.2,0.5)
         self.user_list['james'] = new_user
         # self.users.append(new_user)
