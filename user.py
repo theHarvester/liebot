@@ -51,8 +51,8 @@ class User:
             queue_result = queue_request.json()
             if queue_result.has_key("game_id"):
                 self.game_id = queue_result['game_id']
-            else:
-                print self.username + " is queued"
+            # else:
+            #     print self.username + " is queued"
 
     def is_still_playing(self):
         if self.game_id is None:
@@ -131,12 +131,12 @@ class User:
                     highest_confidence_dice = die
                     highest_confidence_call = 'lie'
 
-                print ' lie', lie, 'spot on', spot_on, 'raise', highest_confidence
+                # print ' lie', lie, 'spot on', spot_on, 'raise', highest_confidence
                 if highest_confidence_call == 'raise':
                     raise_amount = self.get_next_raise_amount(highest_confidence_dice)
 
                     raise_amount_modifier = int((unknown_dice_count - raise_amount) / 4)
-                    print raise_amount_modifier
+                    # print raise_amount_modifier
                     if raise_amount_modifier < 0:
                         raise_amount_modifier = 0
 
@@ -145,8 +145,8 @@ class User:
                     self.make_move(highest_confidence_call, raise_amount, highest_confidence_dice)
                 else:
                     self.make_move(highest_confidence_call, 0, 0)
-        else:
-            print self.username, "cant move because its not their turn"
+        # else:
+        #     print self.username, "cant move because its not their turn"
 
     def get_next_raise_amount(self, dice_face):
         if self.validate_game_state():
